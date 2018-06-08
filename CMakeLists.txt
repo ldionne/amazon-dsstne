@@ -17,7 +17,7 @@ find_package(CppUnit REQUIRED)
 find_package(JsonCpp REQUIRED)
 find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(NetCDF4 REQUIRED)
-find_package(TensorflowCC REQUIRED)
+find_package(TensorflowCC)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
 
@@ -56,7 +56,14 @@ target_include_directories(dsstne PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOUR
 target_include_directories(dsstne PUBLIC /usr/lib/openmpi/include)
 target_compile_features(dsstne PUBLIC cxx_std_11)
 target_compile_options(dsstne PRIVATE -use_fast_math)
-target_link_libraries(dsstne PUBLIC JsonCpp::jsoncpp NetCDF4::netcdf MPI::MPI_CXX dsstne_cuda TensorflowCC::Shared Boost::filesystem)
+target_link_libraries(dsstne PUBLIC JsonCpp::jsoncpp NetCDF4::netcdf MPI::MPI_CXX dsstne_cuda Boost::filesystem)
+if (TARGET TensorflowCC::Shared)
+  message(STATUS "TensorflowCC was found -- support for Tensorboard will be built")
+  target_link_libraries(dsstne PUBLIC TensorflowCC::Shared)
+else()
+  target_compile_definitions(dsstne PRIVATE DSSTNE_NO_TENSORBOARD_SUPPORT)
+  message(STATUS "TensorflowCC was not found -- support for Tensorboard will not be built")
+endif()
 
 set(TARGET_ARCHITECTURES -gencode=arch=compute_70,code=sm_70
                          -gencode=arch=compute_61,code=sm_61

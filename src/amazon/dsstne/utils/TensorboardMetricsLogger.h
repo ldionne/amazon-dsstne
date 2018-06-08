@@ -13,10 +13,12 @@
 #define AMAZON_DSSTNE_UTILS_TENSORBOARD_METRICS_LOGGER_H
 
 #include <boost/filesystem.hpp>
-#include <tensorflow/core/util/events_writer.h>
 
+#include <memory>
 #include <string>
 
+
+namespace tensorflow { class EventsWriter; }
 
 class TensorboardMetricsLogger {
 public:
@@ -31,8 +33,11 @@ public:
     // the graph displayed for the given metric in the Tensorboard dashboard.
     void scalar(int epoch, std::string const& metric, float value);
 
+    ~TensorboardMetricsLogger(); // defined in the .cpp because EventsWriter is incomplete here
+
 private:
-    tensorflow::EventsWriter events_writer_;
+    // We hold a pointer to avoid having to include the Tensorflow headers here.
+    std::unique_ptr<tensorflow::EventsWriter> _events_writer;
 };
 
 #endif // include guard
